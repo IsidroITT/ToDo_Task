@@ -131,7 +131,7 @@ app.get('/task/info', (req, res) => {
         "Last Task": lastTask,
         "First Task": firstTask,
         "Completed Tasks": completedTasks,
-        "Pending Tasks": task.length - completedTasks + 1
+        "Pending Tasks": task.length - completedTasks
     })
 })
 
