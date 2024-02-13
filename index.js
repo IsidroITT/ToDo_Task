@@ -1,16 +1,14 @@
 // Modulo de express
 const express = require('express');
-
-// Nuestra clase de tareas
-const Task = require('./task');
+const bodyParser = require('body-parser');
+const taskRouter = require('./routes/taskRouter');
 
 const app = express();
+app.use(bodyParser.json())
+app.use('/task', taskRouter);
 
 // Puerto de comunicacion con el servidor
 const PORT = process.env.PORT || 3000;
-
-// Establecemos el modelo de intercambio de datos
-app.use(express.json());
 
 // Array de tareas
 let task = [];
@@ -65,6 +63,35 @@ app.get('/task/one', (req, res) => {
     return res.status(302).json(task[id - 1]);    
 })
 
+// Consultar informacion de las tareas
+app.get('/task/info', (req, res) => {
+
+    // Comprobar que existan tareas en el lista
+    if (task.length === 0){
+        return res.status(404).json({ Error: "La lista de elementos se encuentra vacia" })
+    }
+
+    // Variables 'auxiliares'
+    let totalTask = task.length;
+    let lastTask = task[0];
+    let firstTask = task[task.length - 1];
+    let completedTasks = 0;
+
+    task.forEach(element => {
+        if (element.completed){
+            completedTasks++;
+        }
+    });
+
+    return res.status(302).json({
+        "Total Tasks": totalTask,
+        "Last Task": lastTask,
+        "First Task": firstTask,
+        "Completed Tasks": completedTasks,
+        "Pending Tasks": task.length - completedTasks
+    })
+})
+
 // Eliminar elementos de la lista
 app.delete('/task', (req, res) => {
 
@@ -107,33 +134,6 @@ app.put('/task', (req, res) => {
     return res.status(200).json(updatedTask);  
 })
 
-app.get('/task/info', (req, res) => {
-
-    // Comprobar que existan tareas en el lista
-    if (task.length === 0){
-        return res.status(404).json({ Error: "La lista de elementos se encuentra vacia" })
-    }
-
-    // Variables 'auxiliares'
-    let totalTask = task.length;
-    let lastTask = task[0];
-    let firstTask = task[task.length - 1];
-    let completedTasks = 0;
-
-    task.forEach(element => {
-        if (element.completed){
-            completedTasks++;
-        }
-    });
-
-    return res.status(302).json({
-        "Total Tasks": totalTask,
-        "Last Task": lastTask,
-        "First Task": firstTask,
-        "Completed Tasks": completedTasks,
-        "Pending Tasks": task.length - completedTasks
-    })
-})
 
 // Ejecutar el servidor en el puerto indicado (3000)
 app.listen(PORT, () =>{
