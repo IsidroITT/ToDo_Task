@@ -50,6 +50,11 @@ app.get('/task', (req, res) => {
 
 // Consultar una tarea por su id
 app.get('/task/one', (req, res) => {
+
+    if (!res.body.id){
+        return res.status(400).json({ Error: "Hace falta un parametro a buscar" });
+    }
+
     const { id } = req.body;
     
     // Error  si no encuentra la tarea buscada
@@ -62,6 +67,11 @@ app.get('/task/one', (req, res) => {
 
 // Eliminar elementos de la lista
 app.delete('/task', (req, res) => {
+
+    if (!res.body.id){
+        return res.status(400).json({ Error: "Hace falta un parametro a buscar" });
+    }
+
     const { id } = req.body
 
     if (!task.includes(task[id - 1])){
@@ -74,10 +84,6 @@ app.delete('/task', (req, res) => {
 
 // Actualizar la lista de tareas
 app.put('/task', (req, res) => {
-    // Comprobar que la tarea exista
-    if (!task.includes(task[id - 1])){
-        return res.status(400).json({Error: "Tarea no encontrada"});
-    }
 
     // Comprobar que la informacion de la tarea a actualizar este completa
     if (!req.body.id || !req.body.title || !req.body.description || !req.body.completed){
@@ -85,6 +91,11 @@ app.put('/task', (req, res) => {
     }
 
     const { id, title, description, completed} = req.body;
+
+    // Comprobar que la tarea exista
+    if (!task.includes(task[id - 1])){
+        return res.status(400).json({Error: "Tarea no encontrada"});
+    }
 
     // Crear las tareas con la informacion basica (titulo y descripcion) 
     const updatedTask = new Task(id, title, description, completed);
@@ -94,6 +105,34 @@ app.put('/task', (req, res) => {
 
     // Devolver el estado de la respuesta y mostar la nueva tarea agregada
     return res.status(200).json(updatedTask);  
+})
+
+app.get('/task/info', (req, res) => {
+
+    // Comprobar que existan tareas en el lista
+    if (task.length === 0){
+        return res.status(404).json({ Error: "La lista de elementos se encuentra vacia" })
+    }
+
+    // Variables 'auxiliares'
+    let totalTask = task.length;
+    let lastTask = task[0];
+    let firstTask = task[task.length - 1];
+    let completedTasks = 0;
+
+    task.forEach(element => {
+        if (element.completed){
+            completedTasks++;
+        }
+    });
+
+    return res.status(302).json({
+        "Total Tasks": totalTask,
+        "Last Task": lastTask,
+        "First Task": firstTask,
+        "Completed Tasks": completedTasks,
+        "Pending Tasks": task.length - completedTasks + 1
+    })
 })
 
 // Ejecutar el servidor en el puerto indicado (3000)
